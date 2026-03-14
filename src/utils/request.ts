@@ -115,20 +115,20 @@ const request = {
   },
 
   // DELETE 请求：支持参数拼 URL 或放请求体
-  delete(url: string, params = {}) {
+  delete<T = unknown>(url: string, params = {}): Promise<T> {
     return service.delete(url, { params })
   },
 
   // 扩展：支持 form-data 格式的 POST（如文件上传）
-  // postForm(url:string, data = {}) {
-  //   const formData = new FormData()
-  //   Object.entries(data).forEach(([key, value]) => {
-  //     formData.append(key, value)
-  //   })
-  //   return service.post(url, formData, {
-  //     headers: { 'Content-Type': 'multipart/form-data' }
-  //   })
-  // }
+  postForm<T = unknown>(url: string, data: Record<string, string | Blob> = {}): Promise<T> {
+    const formData = new FormData()
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value)
+    })
+    return service.post(url, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  }
 }
 
 // 导出封装后的 request 实例

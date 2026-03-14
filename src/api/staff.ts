@@ -6,7 +6,7 @@ import request from '../utils/request'
 // 定义并导出统一响应结构
 export interface ApiResponse<T> {
   code: number
-  message: string
+  message?: string
   data?: T
 }
 
