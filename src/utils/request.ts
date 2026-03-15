@@ -100,8 +100,8 @@ const request = {
   },
 
   // POST 请求：参数放在请求体（JSON 格式）
-  post<T = unknown>(url: string, data = {}): Promise<T> {
-    return service.post(url, data)
+  post<T = unknown>(url: string, data = {}, config = {}): Promise<T> {
+    return service.post(url, data, config)
   },
 
   // PUT 请求：通常用于全量更新资源

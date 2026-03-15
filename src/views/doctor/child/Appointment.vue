@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getReservedPatientsService, type ReservedPatientInfo } from '@/api/doctor.ts'
+import {
+  getReservedPatientsService,
+  type ReservedPatientInfo,
+} from '@/api/doctor/doctorAppointment.ts'
 import { ElMessage } from 'element-plus'
 
 const patientList = ref<ReservedPatientInfo[]>([])

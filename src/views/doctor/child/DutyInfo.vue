@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getDutyInfoService, type DutyInfo } from '@/api/doctor.ts'
+import { getDutyInfoService, type DutyInfo } from '@/api/doctor/doctorDutyInfo'
 import { ElMessage } from 'element-plus'
 
 const dutyInfoList = ref<DutyInfo[]>([])

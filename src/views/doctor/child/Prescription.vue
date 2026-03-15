@@ -7,8 +7,8 @@ import {
   deletePrescriptionService,
   type PrescriptionItem,
   type PrescriptionData,
-  type PrescriptionDetailDTO
-} from '@/api/doctor.ts'
+  type PrescriptionDetailDTO,
+} from '@/api/doctor/doctorPrescription'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const prescriptionList = ref<PrescriptionItem[]>([])
@@ -22,7 +22,7 @@ const form = ref<PrescriptionData>({
   prescriptionName: '',
   disease: '',
   prescriptionDesc: '',
-  prescriptionDetails: []
+  prescriptionDetails: [],
 })
 
 // 获取处方列表
@@ -49,7 +49,7 @@ const handleAdd = () => {
     prescriptionName: '',
     disease: '',
     prescriptionDesc: '',
-    prescriptionDetails: []
+    prescriptionDetails: [],
   }
   dialogVisible.value = true
 }
@@ -62,7 +62,7 @@ const handleEdit = (row: PrescriptionItem) => {
     prescriptionName: row.prescriptionName,
     disease: row.disease,
     prescriptionDesc: row.prescriptionDesc,
-    prescriptionDetails: [...row.prescriptionDetails]
+    prescriptionDetails: [...row.prescriptionDetails],
   }
   dialogVisible.value = true
 }
@@ -73,7 +73,7 @@ const handleDelete = async (row: PrescriptionItem) => {
     await ElMessageBox.confirm('确定要删除该处方吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
     })
     const result = await deletePrescriptionService(row.id)
     if (result.code === 0) {
@@ -94,7 +94,7 @@ const handleSubmit = async () => {
       const updateData: PrescriptionItem = {
         id: currentId.value,
         doctorId: '', // 这里可能需要从用户信息中获取
-        ...form.value
+        ...form.value,
       }
       const result = await updatePrescriptionService(updateData)
       if (result.code === 0) {
@@ -126,7 +126,7 @@ const addDetail = () => {
     dosage: '',
     frequency: '',
     usage: '',
-    drugRemark: ''
+    drugRemark: '',
   })
 }
 
@@ -152,9 +152,7 @@ onMounted(() => {
         <el-table-column prop="disease" label="适用疾病" align="center" />
         <el-table-column prop="prescriptionDesc" label="处方描述" align="center" />
         <el-table-column prop="prescriptionDetails" label="药品数量" align="center">
-          <template #default="{ row }">
-            {{ row.prescriptionDetails?.length || 0 }} 种
-          </template>
+          <template #default="{ row }"> {{ row.prescriptionDetails?.length || 0 }} 种 </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" align="center" />
         <el-table-column label="操作" align="center" width="180">
@@ -181,7 +179,12 @@ onMounted(() => {
           <el-input v-model="form.disease" placeholder="请输入适用疾病" />
         </el-form-item>
         <el-form-item label="处方描述">
-          <el-input v-model="form.prescriptionDesc" type="textarea" :rows="2" placeholder="请输入处方描述" />
+          <el-input
+            v-model="form.prescriptionDesc"
+            type="textarea"
+            :rows="2"
+            placeholder="请输入处方描述"
+          />
         </el-form-item>
 
         <!-- 处方明细列表 -->
@@ -208,7 +211,9 @@ onMounted(() => {
             </el-col>
           </el-row>
         </div>
-        <el-button type="primary" plain @click="addDetail" class="add-detail-btn"> 增加药品明细 </el-button>
+        <el-button type="primary" plain @click="addDetail" class="add-detail-btn">
+          增加药品明细
+        </el-button>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>

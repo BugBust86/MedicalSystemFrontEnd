@@ -1,51 +1,5 @@
-import request from '../utils/request'
-import type { ApiResponse } from './staff'
-
-// 值班表数据部分接口类型
-export interface DutyInfo {
-  workDate: string
-  workTime: string
-  deptName: string
-  doctorNo: string
-  doctorName: string
-  reserveMax: number
-  reserved: number
-}
-// 导出查询值班表函数
-export const getDutyInfoService = (): Promise<ApiResponse<DutyInfo[]>> => {
-  return request.get('/doctor/workTable')
-}
-
-// 个人中心数据部分接口类型
-export interface DoctorInfo {
-  pic: string // 医生头像URL
-  staffId: string
-  name: string
-  phone: string
-  deptName: string
-  specialty: string
-  title: string
-}
-// 导出查询个人中心信息函数
-export const getDoctorInfoService = (): Promise<ApiResponse<DoctorInfo>> => {
-  return request.get('/staff/staffInfo')
-}
-
-// 患者预约信息数据部分接口类型
-export interface ReservedPatientInfo {
-  reserveDate: string
-  reserveTime: string
-  patientName: string
-  gender: string
-  contactPhone: string
-  age: number
-  deptName: string
-  doctorName: string
-}
-// 导出查询预约某个医生的患者信息表函数
-export const getReservedPatientsService = (): Promise<ApiResponse<ReservedPatientInfo[]>> => {
-  return request.get(`/doctor/patientReserve`)
-}
+import request from '../../utils/request'
+import type { ApiResponse } from '../staff'
 
 // 处方明细类型
 export interface PrescriptionDetailDTO {
