@@ -135,7 +135,7 @@ const handleLogin = async () => {
               <el-input v-model="loginData.staffId" placeholder="请输入工号" />
             </el-form-item>
             <el-form-item label="密码：" prop="password">
-              <el-input v-model="loginData.password" type="password" placeholder="请输入密码" />
+              <el-input v-model="loginData.password" type="password" placeholder="请输入密码" show-password />
             </el-form-item>
             <el-form-item label="角色：" prop="role">
               <el-radio-group v-model="loginData.role">
@@ -159,10 +159,10 @@ const handleLogin = async () => {
               <el-input v-model="registerData.phone" placeholder="请输入手机号" />
             </el-form-item>
             <el-form-item label="密码：" prop="password">
-              <el-input v-model="registerData.password" placeholder="请输入密码" />
+              <el-input v-model="registerData.password" placeholder="请输入密码" show-password />
             </el-form-item>
             <el-form-item label="确认密码：" prop="pswConfirm">
-              <el-input v-model="registerData.pswConfirm" placeholder="再次输入密码" />
+              <el-input v-model="registerData.pswConfirm" placeholder="再次输入密码" show-password />
             </el-form-item>
             <el-form-item label="角色：" prop="role">
               <el-radio-group v-model="registerData.role">
