@@ -26,7 +26,7 @@ const router = createRouter({
           path: 'duty-info',
           name: 'duty-info',
           component: () => import('@/views/doctor/child/DutyInfo.vue'),
-          meta: { requiresAuth: true },
+          meta: { requiresAuth: true }, // 表示访问该路由需要认证
         },
         {
           path: 'appointment',
@@ -53,12 +53,54 @@ const router = createRouter({
       name: 'admin',
       component: () => import('@/views/admin/AdminRoot.vue'),
       meta: { requiresAuth: true, allowedRoles: ['管理员'] },
+      redirect: '/admin/profile',
+      children: [
+        {
+          path: 'profile',
+          name: 'admin-profile',
+          component: () => import('@/views/admin/child/AdminProfile.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'staff-manage',
+          name: 'staff-manage',
+          component: () => import('@/views/admin/child/StaffManage.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'dept-manage',
+          name: 'dept-manage',
+          component: () => import('@/views/admin/child/DeptManage.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'work-table-manage',
+          name: 'work-table-manage',
+          component: () => import('@/views/admin/child/WorkTableManage.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
     },
     {
       path: '/lab-technician',
       name: 'lab-technician',
       component: () => import('@/views/labTech/LabTechnicianRoot.vue'),
       meta: { requiresAuth: true, allowedRoles: ['化验员'] },
+      redirect: '/lab-technician/profile',
+      children: [
+        {
+          path: 'profile',
+          name: 'labtech-profile',
+          component: () => import('@/views/labTech/child/LabTechProfile.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'publish-project',
+          name: 'publish-project',
+          component: () => import('@/views/labTech/child/PublishProject.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
     },
     {
       path: '/unauthorized',
@@ -70,42 +112,42 @@ const router = createRouter({
 
 // 添加全局前置守卫，to 是目标路由，from 是来源路由，next()放行
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
+  setTimeout(() => {
+    const token = localStorage.getItem('token')
 
-  // 如果已登录且访问登录页，重定向到默认页面
-  if (to.path === '/' && token) {
-    const role = localStorage.getItem('role')
-    if (role === '医生') {
-      return next('/doctor')
-    } else if (role === '管理员') {
-      return next('/admin')
-    } else if (role === '化验员') {
-      return next('/lab-technician')
-    } else {
-      return next('/doctor') // 默认跳转到医生页面
+    // 如果已登录且访问登录页，重定向到默认页面
+    if (to.path === '/' && token) {
+      const role = localStorage.getItem('role')
+      if (role === '医生') {
+        return next('/doctor')
+      } else if (role === '管理员') {
+        return next('/admin')
+      } else if (role === '化验员') {
+        return next('/lab-technician')
+      } // role 只会是上述几种，
     }
-  }
 
-  // 检查是否需要登录
-  if (to.meta.requiresAuth && !token) {
-    ElMessage.warning('请先登录')
-    return next({
-      path: '/',
-      query: { redirect: to.fullPath }, // 保存原始目标路径
-    })
-  }
-
-  // 检查角色权限
-  if (to.meta.allowedRoles && token) {
-    const userRole = localStorage.getItem('role')
-    const allowedRoles = to.meta.allowedRoles as string[]
-    if (!userRole || !allowedRoles.includes(userRole)) {
-      ElMessage.error('无权访问该页面')
-      return next('/unauthorized')
+    // 检查是否需要登录，如果需要认证，且 token不存在，则重定向到登录页
+    if (to.meta.requiresAuth && !token) {
+      ElMessage.warning('请先登录')
+      return next({
+        path: '/',
+        query: { redirect: to.fullPath }, // 保存原始目标路径
+      })
     }
-  }
 
-  return next()
+    // 检查角色权限
+    if (to.meta.allowedRoles && token) {
+      const userRole = localStorage.getItem('role')
+      const allowedRoles = to.meta.allowedRoles as string[]
+      if (!userRole || !allowedRoles.includes(userRole)) {
+        ElMessage.error('无权访问该页面')
+        return next('/unauthorized')
+      }
+    }
+
+    return next()
+  }, 0) // 解决 Element Plus 的 ElMessage 在路由守卫中被 Vue 3 的 Suspense 机制阻止显示的问题，添加一个微任务延迟
 })
 
 export default router

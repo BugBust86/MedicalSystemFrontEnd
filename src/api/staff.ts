@@ -35,6 +35,7 @@ export interface StaffLoginData {
 interface LoginResult {
   token: string
   name: string
+  role: '医生' | '化验员' | '管理员'
 }
 // 导出登录函数
 export const staffLoginService = (loginData: StaffLoginData): Promise<ApiResponse<LoginResult>> => {

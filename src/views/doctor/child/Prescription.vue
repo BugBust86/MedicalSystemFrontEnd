@@ -57,12 +57,12 @@ const handleAdd = () => {
 // 编辑处方
 const handleEdit = (row: PrescriptionItem) => {
   isEdit.value = true
-  currentId.value = row.id
+  currentId.value = row.prescriptionId
   form.value = {
     prescriptionName: row.prescriptionName,
     disease: row.disease,
     prescriptionDesc: row.prescriptionDesc,
-    prescriptionDetails: [...row.prescriptionDetails],
+    prescriptionDetails: row.prescriptionDetails ? [...row.prescriptionDetails] : [],
   }
   dialogVisible.value = true
 }
@@ -75,7 +75,7 @@ const handleDelete = async (row: PrescriptionItem) => {
       cancelButtonText: '取消',
       type: 'warning',
     })
-    const result = await deletePrescriptionService(row.id)
+    const result = await deletePrescriptionService(row.prescriptionId)
     if (result.code === 0) {
       ElMessage.success('删除成功')
       fetchPrescriptions()
@@ -92,7 +92,7 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       const updateData: PrescriptionItem = {
-        id: currentId.value,
+        prescriptionId: currentId.value,
         doctorId: '', // 这里可能需要从用户信息中获取
         ...form.value,
       }
@@ -136,7 +136,7 @@ const removeDetail = (index: number) => {
 }
 
 onMounted(() => {
-  fetchPrescriptions()
+  fetchPrescriptions() //钩子函数，组件挂载时会自动调用函数查询处方数据
 })
 </script>
 

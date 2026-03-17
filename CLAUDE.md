@@ -44,12 +44,16 @@ npm run type-check
 
 ```
 src/
-├── api/           # API service functions (staff.ts, doctor.ts)
-├── utils/         # Utilities (request.ts - axios wrapper)
-├── views/         # Page components (organized by role: admin/, doctor/, labTech/)
-├── router/        # Vue Router configuration
-├── App.vue        # Root component
-└── main.ts        # Entry point
+├── api/                    # API service functions
+│   ├── staff.ts           # Staff authentication
+│   ├── admin/             # Admin APIs (dept, drug, staff, worktable management)
+│   ├── doctor/            # Doctor APIs (duty, appointment, prescription, profile)
+│   └── labTech/           # Lab technician APIs (profile, check projects)
+├── utils/                  # Utilities (request.ts - axios wrapper)
+├── views/                  # Page components (organized by role: admin/, doctor/, labTech/)
+├── router/                 # Vue Router configuration
+├── App.vue                 # Root component
+└── main.ts                 # Entry point
 ```
 
 ### Path Alias
@@ -85,15 +89,22 @@ Route guards implement role-based access control:
 - `staffLoginService` - Staff login
 - `uploadAvatarService` - Avatar upload
 
-**`src/api/doctor.ts`** - Doctor-related APIs:
-- `getDutyInfoService` - Get duty schedule
-- `getDoctorInfoService` - Get doctor profile
-- `updateDoctorInfoService` - Update doctor info
-- `getReservedPatientsService` - Get reserved patients
-- `getPrescriptionService` - Query prescriptions
-- `addPrescriptionService` - Add prescription
-- `updatePrescriptionService` - Update prescription
-- `deletePrescriptionService` - Delete prescription
+**`src/api/doctor/`** - Doctor-related APIs:
+- `doctorDutyInfo.ts` - Duty schedule management
+- `doctorAppointment.ts` - Patient appointments
+- `doctorPrescription.ts` - Prescription CRUD operations
+- `doctorProfile.ts` - Doctor profile management
+
+**`src/api/admin/`** - Admin APIs:
+- `staffManage.ts` - Staff management
+- `deptManage.ts` - Department management
+- `drugManage.ts` - Drug management
+- `workTableManage.ts` - Worktable/schedule management
+- `adminProfile.ts` - Admin profile
+
+**`src/api/labTech/`** - Lab Technician APIs:
+- `labTechProfile.ts` - Profile management
+- `checkProject.ts` - Lab test project management
 
 ### Environment Variables
 
@@ -107,3 +118,20 @@ Route guards implement role-based access control:
 - Routes in `src/router/index.ts` use dynamic imports for code splitting
 - JWT token stored in localStorage after successful login
 - API responses follow `{ code: number, data: T, message?: string }` format
+
+### Views Structure
+
+```
+src/views/
+├── loginRegister.vue         # Login/registration page
+├── unauthorized.vue          # Unauthorized access page
+├── doctor/                  # Doctor role pages
+│   ├── DoctorIndex.vue      # Doctor layout wrapper
+│   └── child/               # Doctor child pages (duty-info, appointment, prescription, profile)
+├── admin/                   # Admin role pages
+└── labTech/                 # Lab technician role pages
+```
+
+### Default Credentials
+
+- Admin: `admin_no: A2022000`, `password: 123456`

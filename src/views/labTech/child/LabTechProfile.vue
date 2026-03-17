@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getAdminInfoService, updatePswService, type AdminInfo } from '@/api/admin/adminProfile.ts'
+import { getLabTechInfoService, updatePswService, type LabTechInfo } from '@/api/labTech/labTechProfile'
 import { ElMessage } from 'element-plus'
 
-const userInfo = ref<AdminInfo | null>(null)
+const userInfo = ref<LabTechInfo | null>(null)
 const loading = ref(false)
 const activeTab = ref('info')
 
@@ -34,7 +34,7 @@ const toggleEdit = () => {
 const fetchUserInfo = async () => {
   loading.value = true
   try {
-    const result = await getAdminInfoService()
+    const result = await getLabTechInfoService()
     if (result.code === 0 && result.data) {
       userInfo.value = result.data
       editForm.value = {
@@ -50,9 +50,9 @@ const fetchUserInfo = async () => {
   }
 }
 
-// 保存基本信息（管理员暂不支持修改个人信息，保留接口）
+// 保存基本信息（化验员暂不支持修改个人信息，保留接口）
 const saveInfo = async () => {
-  ElMessage.info('管理员暂不支持修改个人信息')
+  ElMessage.info('化验员暂不支持修改个人信息')
   isEditing.value = false
 }
 

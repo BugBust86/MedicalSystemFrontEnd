@@ -1,49 +1,14 @@
-<template>
-  <div class="labtech-root">
-    <el-container>
-      <el-header class="header">
-        <div class="header-title">医疗管理系统 - 实验员端</div>
-        <div class="header-user">
-          您好，{{ userName }}
-          <el-button type="info" plain size="small" @click="handleLogout" style="margin-left: 20px;">
-            <el-icon><SwitchButton /></el-icon>
-            退出登录
-          </el-button>
-        </div>
-      </el-header>
-      <el-container>
-        <el-aside width="200px" class="aside">
-          <el-menu class="menu">
-            <el-menu-item index="dashboard">
-              <el-icon><House /></el-icon>
-              <span>仪表板</span>
-            </el-menu-item>
-            <el-menu-item index="tests">
-              <el-icon><Search /></el-icon>
-              <span>检验管理</span>
-            </el-menu-item>
-            <el-menu-item index="results">
-              <el-icon><Document /></el-icon>
-              <span>报告查看</span>
-            </el-menu-item>
-          </el-menu>
-        </el-aside>
-        <el-main class="main">
-          <router-view />
-        </el-main>
-      </el-container>
-    </el-container>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { House, Search, Document, SwitchButton } from '@element-plus/icons-vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { UserFilled, Plus, SwitchButton } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
+const route = useRoute()
 const userName = ref('')
+
+const activeMenu = computed(() => route.path)
 
 onMounted(() => {
   userName.value = localStorage.getItem('name') || ''
@@ -58,9 +23,81 @@ const handleLogout = () => {
 }
 </script>
 
+<template>
+  <el-container class="layout-container">
+    <!-- 侧边栏 -->
+    <el-aside width="220px" class="aside">
+      <div class="logo">化验员工作台</div>
+      <el-menu class="menu" :default-active="activeMenu" router>
+        <el-menu-item index="/lab-technician/profile">
+          <el-icon><UserFilled /></el-icon>
+          <span>个人中心</span>
+        </el-menu-item>
+        <el-menu-item index="/lab-technician/publish-project">
+          <el-icon><Plus /></el-icon>
+          <span>发布检验项目</span>
+        </el-menu-item>
+      </el-menu>
+    </el-aside>
+
+    <!-- 右侧内容区 -->
+    <el-container>
+      <!-- 头部 -->
+      <el-header class="header">
+        <div class="header-title">医疗管理系统 - 化验员端</div>
+        <div class="header-user">
+          您好，{{ userName }}
+          <el-button type="info" plain size="small" @click="handleLogout" style="margin-left: 20px">
+            <el-icon><SwitchButton /></el-icon>
+            退出登录
+          </el-button>
+        </div>
+      </el-header>
+
+      <!-- 中间内容区 -->
+      <el-main class="main">
+        <router-view />
+      </el-main>
+    </el-container>
+  </el-container>
+</template>
+
 <style scoped>
-.labtech-root {
+.layout-container {
   min-height: 100vh;
+}
+
+.aside {
+  background-color: #304156;
+}
+
+.logo {
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  background-color: #2b3a4a;
+}
+
+.menu {
+  border-right: none;
+  background-color: #304156;
+}
+
+.menu .el-menu-item {
+  color: #bfcbd9;
+}
+
+.menu .el-menu-item:hover {
+  background-color: #263445;
+  color: #409eff;
+}
+
+.menu .el-menu-item.is-active {
+  background-color: #409eff;
+  color: #fff;
 }
 
 .header {
@@ -70,11 +107,6 @@ const handleLogout = () => {
   align-items: center;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
   padding: 0 20px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
 }
 
 .header-title {
@@ -83,24 +115,8 @@ const handleLogout = () => {
   color: #303133;
 }
 
-.aside {
-  position: fixed;
-  top: 60px;
-  bottom: 0;
-  left: 0;
-  width: 200px;
-  background-color: #f5f5f5;
-  padding-top: 20px;
-}
-
 .main {
-  margin-top: 60px;
-  margin-left: 200px;
   background-color: #f5f7fa;
   padding: 20px;
-}
-
-.menu {
-  border-right: none;
 }
 </style>

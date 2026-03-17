@@ -18,7 +18,7 @@ export const getDoctorInfoService = (): Promise<ApiResponse<DoctorInfo>> => {
 }
 
 // 更新医生信息参数类型
-export interface UpdateDoctorInfoData {
+interface UpdateDoctorInfoData {
   phone: string
   email: string
   specialty: string

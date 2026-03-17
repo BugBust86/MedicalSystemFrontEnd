@@ -4,26 +4,22 @@ import {
   getDoctorInfoService,
   updateDoctorInfoService,
   type DoctorInfo,
-} from '@/api/doctor/doctorProfile'
+} from '@/api/doctor/doctorProfile.ts'
 import { uploadAvatarService } from '@/api/doctor/doctorProfile.ts'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, View, Upload } from '@element-plus/icons-vue'
 
-// 处理头像 URL，替换后端地址为前端代理地址
+// 处理头像 URL，后端已返回完整URL
 const getAvatarUrl = (url: string): string => {
-  if (!url) return ''
-  // 如果已经是完整 URL（http 开头），直接返回
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url
-  }
-  // 如果是相对路径，添加前端代理前缀
+  if (!url) return '/images/default-avatar.png' // 如果为空返回默认的图片加载
+  // 后端已返回完整URL，直接返回
   return url
 }
 
 const userInfo = ref<DoctorInfo | null>(null)
 const loading = ref(false)
-const avatarUrl = ref('')
-const uploadLoading = ref(false)
+const avatarUrl = ref(userInfo.value?.pic) // 头像URL
+const uploadLoading = ref(false) // 是否正在上传，如果正在上传避免重复网络请求
 const activeTab = ref('info')
 
 // 编辑状态
@@ -64,9 +60,11 @@ const fetchUserInfo = async () => {
   loading.value = true
   try {
     const result = await getDoctorInfoService()
+    console.log('API Response:', result) // 调试日志
     if (result.code === 0 && result.data) {
       userInfo.value = result.data
       avatarUrl.value = getAvatarUrl(result.data.pic || '')
+      console.log('Processed avatarUrl:', avatarUrl.value) // 调试日志
       editForm.value = {
         phone: result.data.phone || '',
         email: result.data.email || '',
@@ -83,8 +81,11 @@ const fetchUserInfo = async () => {
 
 // 上传头像 - 使用 on-change 处理
 const handleFileChange = async (uploadFile: any) => {
-  const file = uploadFile.raw
+  // Element Plus 的 el-upload 组件在文件选择后会传递一个包含文件信息的对象，其中 raw 属性就是浏览器原生的 File 对象
+  const file = uploadFile.raw // uploadFile代表选择上传的文件的文件信息对象，该对象的 raw 属性就是浏览器原生的 File 对象
+  //file.type 返回文件的 MIME 类型（如 'image/jpeg', 'image/png', 'application/pdf' 等）,如果以image/开头，则是图片文件
   const isImage = file.type.startsWith('image/')
+
   const isLt5M = file.size / 1024 / 1024 < 5
 
   if (!isImage) {
@@ -103,13 +104,12 @@ const handleFileChange = async (uploadFile: any) => {
 
     const result = await uploadAvatarService(formData)
     if (result.code === 0 && result.data) {
-      avatarUrl.value = getAvatarUrl(result.data.url)
       if (userInfo.value) {
         userInfo.value.pic = result.data.url
       }
       ElMessage.success('头像上传成功')
     } else {
-      ElMessage.error(result.message || '上传失败')
+      ElMessage.error('上传失败')
     }
   } catch (error) {
     ElMessage.error('上传头像失败')
@@ -122,7 +122,19 @@ const handleFileChange = async (uploadFile: any) => {
 // 查看头像
 const viewAvatar = () => {
   if (avatarUrl.value) {
-    window.open(avatarUrl.value, '_blank')
+    // 使用 MessageBox 显示头像
+    ElMessageBox.confirm(
+      `<div style="text-align: center;">
+        <img src="${avatarUrl.value}" alt="头像" style="max-width: 100%; max-height: 400px; border-radius: 8px;"/>
+      </div>`,
+      '查看头像',
+      {
+        confirmButtonText: '关闭',
+        showCancelButton: false,
+        dangerouslyUseHTMLString: true,
+        customClass: 'avatar-preview-dialog',
+      }
+    ).catch(() => {}) // 忽略取消操作
   } else {
     ElMessage.warning('暂无头像')
   }
@@ -243,6 +255,7 @@ onMounted(() => {
           <div class="avatar-section">
             <div class="avatar-preview">
               <img v-if="avatarUrl" :src="avatarUrl" class="avatar-large" />
+              <!-- 头像预览 -->
               <div v-else class="avatar-placeholder">
                 <el-icon :size="60"><Plus /></el-icon>
               </div>
@@ -251,7 +264,7 @@ onMounted(() => {
               <el-button type="primary" :icon="View" @click="viewAvatar">查看头像</el-button>
               <el-upload
                 class="avatar-upload-btn"
-                action="#"
+                action="/api/doctor/profile/upload-avatar"
                 :show-file-list="false"
                 :auto-upload="false"
                 :on-change="handleFileChange"
@@ -378,6 +391,14 @@ h2 {
 .upload-tip {
   font-size: 12px;
   color: #909399;
+}
+
+.avatar-preview-dialog .el-message-box__content {
+  padding: 0 !important;
+}
+
+.avatar-preview-dialog .el-message-box__message {
+  margin: 0 !important;
 }
 
 :deep(.el-input__wrapper) {
