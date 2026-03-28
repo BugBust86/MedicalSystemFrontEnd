@@ -17,9 +17,9 @@ export const getAdminInfoService = (): Promise<ApiResponse<AdminInfo>> => {
 
 // 修改密码
 export interface UpdatePswData {
-  oldPassword: string
-  newPassword: string
+  oldPsw: string
+  newPsw: string
 }
-export const updatePswService = (data: UpdatePswData): Promise<ApiResponse<string>> => {
+export const updatePswService = (data: UpdatePswData): Promise<ApiResponse<void>> => {
   return request.post('/staff/updatePsw', data)
 }

@@ -73,16 +73,16 @@ const resetPassword = async () => {
     ElMessage.warning('请输入新密码')
     return
   }
-  if (passwordForm.value.newPassword.length < 6) {
-    ElMessage.warning('新密码长度不能少于6位')
+  if (passwordForm.value.newPassword.length < 5 || passwordForm.value.newPassword.length > 16) {
+    ElMessage.warning('新密码长度必须在5-16字符之间')
     return
   }
 
   passwordLoading.value = true
   try {
     const result = await updatePswService({
-      oldPassword: passwordForm.value.oldPassword,
-      newPassword: passwordForm.value.newPassword,
+      oldPsw: passwordForm.value.oldPassword,
+      newPsw: passwordForm.value.newPassword,
     })
     if (result.code === 0) {
       ElMessage.success('密码修改成功')

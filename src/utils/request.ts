@@ -2,13 +2,6 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus' // 如果你用的是 Vue2 + ElementUI，替换为 import { Message } from 'element-ui'
 
-// // 定义后端返回的通用结构
-// interface ApiResponse<T = unknown> {
-//   code: number
-//   data: T
-//   message: string
-// }
-
 // 1. 创建 axios 实例，统一配置基础参数
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL, // 从环境变量读取接口前缀（适配 Vite），对应的文件位置是.env.environment

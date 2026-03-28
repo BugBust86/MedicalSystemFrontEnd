@@ -93,7 +93,6 @@ const handleSubmit = async () => {
     if (isEdit.value) {
       const updateData: PrescriptionItem = {
         prescriptionId: currentId.value,
-        doctorId: '', // 这里可能需要从用户信息中获取
         ...form.value,
       }
       const result = await updatePrescriptionService(updateData)

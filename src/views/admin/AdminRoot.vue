@@ -52,7 +52,7 @@ const handleLogout = () => {
     <el-container>
       <!-- 头部 -->
       <el-header class="header">
-        <div class="header-title">医疗管理系统 - 管理端</div>
+        <div class="header-title">医疗管理系统 - 管理员端</div>
         <div class="header-user">
           您好，{{ userName }}
           <el-button type="info" plain size="small" @click="handleLogout" style="margin-left: 20px">

@@ -14,7 +14,6 @@ export interface PrescriptionDetailDTO {
 export interface PrescriptionItem {
   prescriptionId: string
   prescriptionName: string
-  doctorId: string
   disease: string
   prescriptionDesc: string
   prescriptionDetails: PrescriptionDetailDTO[]

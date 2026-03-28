@@ -41,3 +41,12 @@ interface LoginResult {
 export const staffLoginService = (loginData: StaffLoginData): Promise<ApiResponse<LoginResult>> => {
   return request.post('/staff/staffLogin', loginData)
 }
+
+// 修改密码
+export interface UpdatePswData {
+  oldPsw: string
+  newPsw: string
+}
+export const updatePswService = (data: UpdatePswData): Promise<ApiResponse<void>> => {
+  return request.post('/staff/updatePsw', data)
+}

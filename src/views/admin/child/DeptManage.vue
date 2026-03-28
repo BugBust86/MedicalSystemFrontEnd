@@ -10,18 +10,19 @@ import {
   type AddDeptData,
 } from '@/api/admin/deptManage.ts'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 const loading = ref(false)
 const deptSortList = ref<DeptSort[]>([])
 const deptList = ref<Department[]>([])
-const selectedSort = ref<string>('')
+const selectedSort = ref<DeptSort | null>(null)
+const showDeptList = ref(false)
 
 // 新增科室对话框
 const dialogVisible = ref(false)
 const deptForm = ref<AddDeptData>({
   deptName: '',
-  deptSortName: '',
-  introduction: '',
+  deptSortId: 0,
 })
 const formLoading = ref(false)
 
@@ -31,10 +32,6 @@ const fetchDeptSortList = async () => {
     const result = await getDeptSortListService()
     if (result.code === 0 && result.data) {
       deptSortList.value = result.data
-      const firstSort = result.data[0]
-      if (firstSort && !selectedSort.value) {
-        selectedSort.value = firstSort.deptSortName
-      }
     }
   } catch (error) {
     ElMessage.error('获取科室分类失败')
@@ -43,14 +40,10 @@ const fetchDeptSortList = async () => {
 }
 
 // 获取科室列表
-const fetchDeptList = async () => {
-  if (!selectedSort.value) {
-    deptList.value = []
-    return
-  }
+const fetchDeptList = async (deptSortName: string) => {
   loading.value = true
   try {
-    const result = await getDeptListService(selectedSort.value)
+    const result = await getDeptListService(deptSortName)
     if (result.code === 0 && result.data) {
       deptList.value = result.data
     }
@@ -62,24 +55,26 @@ const fetchDeptList = async () => {
   }
 }
 
-// 切换分类时重新加载科室
-const handleSortChange = () => {
-  fetchDeptList()
+// 点击分类名查询该分类下的所有科室
+const handleDeptSortClick = (sort: DeptSort) => {
+  selectedSort.value = sort
+  showDeptList.value = true
+  fetchDeptList(sort.deptSortName)
 }
 
-// 重置表单
-const resetForm = () => {
-  deptForm.value = {
-    deptName: '',
-    deptSortName: selectedSort.value,
-    introduction: '',
-  }
+// 返回分类列表
+const backToSortList = () => {
+  showDeptList.value = false
+  selectedSort.value = null
+  deptList.value = []
 }
 
 // 打开新增对话框
 const openDialog = () => {
-  resetForm()
-  deptForm.value.deptSortName = selectedSort.value
+  deptForm.value = {
+    deptName: '',
+    deptSortId: selectedSort.value?.deptSortId || 0,
+  }
   dialogVisible.value = true
 }
 
@@ -89,7 +84,7 @@ const validateForm = (): boolean => {
     ElMessage.warning('请输入科室名称')
     return false
   }
-  if (!deptForm.value.deptSortName) {
+  if (!deptForm.value.deptSortId) {
     ElMessage.warning('请选择科室分类')
     return false
   }
@@ -106,7 +101,7 @@ const submitForm = async () => {
     if (result.code === 0) {
       ElMessage.success('科室添加成功')
       dialogVisible.value = false
-      await fetchDeptList()
+      await fetchDeptList(selectedSort.value!.deptSortName)
     } else {
       ElMessage.error(result.message || '科室添加失败')
     }
@@ -119,18 +114,18 @@ const submitForm = async () => {
 }
 
 // 删除科室
-const handleDelete = async (deptName: string) => {
+const handleDelete = async (dept: Department) => {
   try {
-    await ElMessageBox.confirm('确定要删除该科室吗？', '提示', {
+    await ElMessageBox.confirm(`确定要删除科室 "${dept.deptName}" 吗？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
     })
 
-    const result = await deleteDeptService(deptName)
+    const result = await deleteDeptService(dept.deptId)
     if (result.code === 0) {
       ElMessage.success('科室删除成功')
-      await fetchDeptList()
+      await fetchDeptList(selectedSort.value!.deptSortName)
     } else {
       ElMessage.error(result.message || '科室删除失败')
     }
@@ -144,41 +139,48 @@ const handleDelete = async (deptName: string) => {
 
 onMounted(async () => {
   await fetchDeptSortList()
-  if (selectedSort.value) {
-    await fetchDeptList()
-  }
 })
 </script>
 
 <template>
   <div class="dept-manage">
     <div class="header-row">
-      <h2>科室管理</h2>
-      <el-button type="primary" :disabled="!selectedSort" @click="openDialog">
+      <div class="title-wrapper">
+        <el-button v-if="showDeptList" text @click="backToSortList" class="back-btn">
+          <el-icon><ArrowLeft /></el-icon>
+        </el-button>
+        <h2>{{ showDeptList ? selectedSort?.deptSortName : '科室管理' }}</h2>
+      </div>
+      <el-button v-if="showDeptList" type="primary" @click="openDialog">
         新增科室
       </el-button>
     </div>
 
     <div class="content-wrapper">
-      <!-- 左侧分类列表 -->
-      <div class="sort-panel">
-        <div class="panel-title">科室分类</div>
-        <el-radio-group v-model="selectedSort" @change="handleSortChange" class="sort-list">
-          <el-radio v-for="sort in deptSortList" :key="sort.id" :value="sort.deptSortName">
-            {{ sort.deptSortName }}
-          </el-radio>
-        </el-radio-group>
+      <!-- 科室分类列表 -->
+      <div v-if="!showDeptList" class="sort-list-container">
+        <div class="list-title">请选择科室分类</div>
+        <div class="sort-grid">
+          <div
+            v-for="sort in deptSortList"
+            :key="sort.deptSortId"
+            class="sort-card"
+            @click="handleDeptSortClick(sort)"
+          >
+            <div class="sort-name">{{ sort.deptSortName }}</div>
+            <el-icon class="arrow-icon"><ArrowRight /></el-icon>
+          </div>
+        </div>
       </div>
 
-      <!-- 右侧科室列表 -->
-      <div class="dept-panel">
-        <div class="panel-title">{{ selectedSort || '请选择分类' }}</div>
+      <!-- 科室列表 -->
+      <div v-else class="dept-panel">
         <el-table v-loading="loading" :data="deptList" stripe style="width: 100%">
+          <el-table-column prop="deptId" label="科室ID" width="100" />
           <el-table-column prop="deptName" label="科室名称" />
-          <el-table-column prop="introduction" label="简介" show-overflow-tooltip />
           <el-table-column label="操作" width="100">
             <template #default="{ row }">
-              <el-button type="danger" size="small" @click="handleDelete(row.deptName)">
+              <el-button type="danger" size="small" @click="handleDelete(row)">
                 删除
               </el-button>
             </template>
@@ -200,12 +202,14 @@ onMounted(async () => {
           <el-input v-model="deptForm.deptName" placeholder="请输入科室名称" />
         </el-form-item>
         <el-form-item label="所属分类" required>
-          <el-select v-model="deptForm.deptSortName" placeholder="请选择科室分类" style="width: 100%">
-            <el-option v-for="sort in deptSortList" :key="sort.id" :label="sort.deptSortName" :value="sort.deptSortName" />
+          <el-select v-model="deptForm.deptSortId" placeholder="请选择科室分类" style="width: 100%">
+            <el-option
+              v-for="sort in deptSortList"
+              :key="sort.deptSortId"
+              :label="sort.deptSortName"
+              :value="sort.deptSortId"
+            />
           </el-select>
-        </el-form-item>
-        <el-form-item label="简介">
-          <el-input v-model="deptForm.introduction" type="textarea" :rows="3" placeholder="请输入科室简介" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -228,6 +232,17 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 
+.title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.back-btn {
+  padding: 0;
+  font-size: 18px;
+}
+
 h2 {
   font-size: 20px;
   font-weight: 600;
@@ -236,44 +251,57 @@ h2 {
 }
 
 .content-wrapper {
-  display: flex;
-  gap: 20px;
-}
-
-.sort-panel {
-  width: 200px;
   background: #fff;
   border-radius: 4px;
-  padding: 15px;
-  flex-shrink: 0;
+  padding: 20px;
+  min-height: 500px;
 }
 
-.dept-panel {
-  flex: 1;
-  background: #fff;
-  border-radius: 4px;
-  padding: 15px;
-  min-width: 0;
+.sort-list-container {
+  padding: 10px;
 }
 
-.panel-title {
+.list-title {
   font-size: 16px;
   font-weight: 600;
   color: #303133;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
+  margin-bottom: 20px;
 }
 
-.sort-list {
+.sort-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.sort-card {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.sort-list :deep(.el-radio) {
-  margin-right: 0;
-  height: 36px;
-  line-height: 36px;
+.sort-card:hover {
+  border-color: #409eff;
+  box-shadow: 0 2px 12px rgba(64, 158, 255, 0.2);
+}
+
+.sort-name {
+  font-size: 16px;
+  color: #303133;
+  font-weight: 500;
+}
+
+.arrow-icon {
+  color: #909399;
+  font-size: 16px;
+}
+
+.dept-panel {
+  padding: 10px;
 }
 </style>

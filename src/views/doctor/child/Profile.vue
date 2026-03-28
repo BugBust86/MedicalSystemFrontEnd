@@ -6,6 +6,7 @@ import {
   type DoctorInfo,
 } from '@/api/doctor/doctorProfile.ts'
 import { uploadAvatarService } from '@/api/doctor/doctorProfile.ts'
+import { updatePswService } from '@/api/staff'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, View, Upload } from '@element-plus/icons-vue'
 
@@ -47,13 +48,6 @@ const toggleEdit = () => {
   }
   isEditing.value = !isEditing.value
 }
-
-// 重置密码表单
-const passwordForm = ref({
-  oldPassword: '',
-  newPassword: '',
-})
-const passwordLoading = ref(false)
 
 // 获取个人中心信息
 const fetchUserInfo = async () => {
@@ -172,31 +166,41 @@ const saveInfo = async () => {
   }
 }
 
+// 重置密码表单
+const passwordForm = ref({
+  oldPsw: '',
+  newPsw: '',
+})
+const passwordLoading = ref(false)
 // 重置密码
 const resetPassword = async () => {
-  if (!passwordForm.value.oldPassword) {
+  if (!passwordForm.value.oldPsw) {
     ElMessage.warning('请输入旧密码')
     return
   }
-  if (!passwordForm.value.newPassword) {
+  if (!passwordForm.value.newPsw) {
     ElMessage.warning('请输入新密码')
     return
   }
-  if (passwordForm.value.newPassword.length < 6) {
-    ElMessage.warning('新密码长度不能少于6位')
+  if (passwordForm.value.newPsw.length < 5 || passwordForm.value.newPsw.length > 16) {
+    ElMessage.warning('新密码长度必须在5-16字符之间')
     return
   }
 
   passwordLoading.value = true
   try {
-    // 模拟重置密码API调用
-    // const result = await resetPasswordService(passwordForm.value)
-    // 这里使用setTimeout模拟
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    ElMessage.success('密码重置成功')
-    passwordForm.value = { oldPassword: '', newPassword: '' }
+    const result = await updatePswService({
+      oldPsw: passwordForm.value.oldPsw,
+      newPsw: passwordForm.value.newPsw,
+    })
+    if (result.code === 0) {
+      ElMessage.success('密码修改成功')
+      passwordForm.value = { oldPsw: '', newPsw: '' }
+    } else {
+      ElMessage.error(result.message || '密码修改失败')
+    }
   } catch (error) {
-    ElMessage.error('密码重置失败')
+    ElMessage.error('密码修改失败')
     console.error(error)
   } finally {
     passwordLoading.value = false
@@ -220,7 +224,7 @@ onMounted(() => {
               <span>{{ userInfo?.name || '-' }}</span>
             </el-form-item>
             <el-form-item label="工号">
-              <span v-if="!isEditing">{{ userInfo?.staffId || '-' }}</span>
+              <span>{{ userInfo?.staffId || '-' }}</span>
             </el-form-item>
             <el-form-item label="电话">
               <span v-if="!isEditing">{{ userInfo?.phone || '-' }}</span>
@@ -231,14 +235,14 @@ onMounted(() => {
               <el-input v-else v-model="editForm.email" />
             </el-form-item>
             <el-form-item label="科室">
-              <span v-if="!isEditing">{{ userInfo?.deptName || '-' }}</span>
+              <span>{{ userInfo?.deptName || '-' }}</span>
             </el-form-item>
             <el-form-item label="擅长">
               <span v-if="!isEditing">{{ userInfo?.specialty || '-' }}</span>
               <el-input v-else v-model="editForm.specialty" />
             </el-form-item>
             <el-form-item label="职称">
-              <span v-if="!isEditing">{{ userInfo?.title || '-' }}</span>
+              <span>{{ userInfo?.title || '-' }}</span>
             </el-form-item>
             <el-form-item>
               <el-button v-if="!isEditing" type="primary" @click="toggleEdit">编辑</el-button>
@@ -285,7 +289,7 @@ onMounted(() => {
           <el-form label-width="80px" class="profile-form password-form">
             <el-form-item label="旧密码">
               <el-input
-                v-model="passwordForm.oldPassword"
+                v-model="passwordForm.oldPsw"
                 type="password"
                 placeholder="请输入旧密码"
                 show-password
@@ -293,7 +297,7 @@ onMounted(() => {
             </el-form-item>
             <el-form-item label="新密码">
               <el-input
-                v-model="passwordForm.newPassword"
+                v-model="passwordForm.newPsw"
                 type="password"
                 placeholder="请输入新密码"
                 show-password
